@@ -44,7 +44,7 @@ bool getAdjacentDiffer(unsigned char* img, int i) {
 	bool black = isBlack(img[i * c]);
 	// We only target black nodes, to prevent jaggidynessssrewgww
 	if (!black) return false;
-	for (std::size_t m = 0; i < matrix.size(); i++) {
+	for (std::size_t m = 0; m < matrix.size(); m++) {
 		std::pair<int, int> p(x + matrix[m].first, y + matrix[m].second);
 		if (p.first >= 0 && p.second >= 0 && p.first < FRAME_WIDTH && p.second < FRAME_HEIGHT &&
 			black != isBlack(img[(p.first + p.second * FRAME_WIDTH) * c])) {
@@ -64,6 +64,7 @@ std::vector<int> getAdjacent(int i) {
 		std::pair<int, int> p(x + matrix[m].first, y + matrix[m].second);
 		if (p.first >= 0 && p.second >= 0 && p.first < FRAME_WIDTH && p.second < FRAME_HEIGHT) {
 			result.push_back(p.first + p.second * FRAME_WIDTH);
+			abort();
 		}
 	}
 	return result;
@@ -96,14 +97,28 @@ int main() {
 			std::cerr << "CRITICAL: Invalid frame size\n";
 			return 1;
 		}
+		snprintf(pathBuffer.data(), pathBuffer.size(), "C:\\Users\\musselmano\\source\\repos\\l1-loopy-cturtles-KeinR\\hexdump\\%.4i.bin", f);
+		std::ofstream hex(pathBuffer.data(), std::ios::binary | std::ios::out | std::ios::trunc);
+		hex.write((char *) img, FRAME_SIZE * c);
+		hex.close();
+
 
 		memset(setMap.data(), 0, sizeof(bool) * setMap.size());
 		paths.clear();
 
+		if (isBlack(img[(100 + 100 * FRAME_WIDTH) * c]) != isBlack(img[(101 + 100 * FRAME_WIDTH) * c])) {
+			// abort();
+		}
+
 		for (int i = 0; i < FRAME_SIZE; i++) {
 			if (setMap[i]) continue;
+			if (i + 1 < FRAME_SIZE && (i+1) % FRAME_WIDTH != 0 && isBlack(img[i * c]) != isBlack(img[(i + 1) * c])) {
+				abort();
+			}
 
 			if (getAdjacentDiffer(img, i)) {
+				std::cout << "UESUSEFHOISEHGOESGO" << std::flush;
+				abort();
 				std::vector<int> path;
 				int locus = i;
 				bool good = false;
@@ -130,6 +145,7 @@ int main() {
 
 		// screen.clearscreen();
 
+		/*
 		for (std::vector<int>& p : paths) {
 			int sx = p.front() % FRAME_WIDTH;
 			int sy = p.front() / FRAME_WIDTH;
@@ -142,6 +158,7 @@ int main() {
 				t.goTo(x, y);
 			}
 		}
+		*/
 
 		std::cout << "Paths = " << paths.size() << ", frame #" << f << '\n';
 	}
