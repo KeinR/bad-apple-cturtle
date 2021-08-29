@@ -22,11 +22,18 @@
 
 namespace ct = cturtle;
 
-std::array<std::pair<int, int>, 8> matrix = {
+std::array<std::pair<int, int>, 8> matrixRedPill = {
 	std::pair<int, int>(1, 1),
 	std::pair<int, int>(1, -1),
 	std::pair<int, int>(-1, 1),
 	std::pair<int, int>(-1, -1),
+	std::pair<int, int>(0, -1),
+	std::pair<int, int>(0, 1),
+	std::pair<int, int>(1, 0),
+	std::pair<int, int>(-1, 0)
+};
+
+std::array<std::pair<int, int>, 4> matrixBluePill = {
 	std::pair<int, int>(0, -1),
 	std::pair<int, int>(0, 1),
 	std::pair<int, int>(1, 0),
@@ -41,7 +48,7 @@ void toCturtle(int i, int* x, int* y) {
 }
 
 bool isBlack(int r) {
-	return r < 10;
+	return r < 40;
 }
 
 // Get Adjacent differ ONLY IF this node is black
@@ -51,8 +58,8 @@ bool getAdjacentDiffer(unsigned char* img, int i) {
 	bool black = isBlack(img[i * c]);
 	// We only target black nodes, to prevent jaggidynessssrewgww
 	if (!black) return false;
-	for (std::size_t m = 0; m < matrix.size(); m++) {
-		std::pair<int, int> p(x + matrix[m].first, y + matrix[m].second);
+	for (std::size_t m = 0; m < matrixBluePill.size(); m++) {
+		std::pair<int, int> p(x + matrixBluePill[m].first, y + matrixBluePill[m].second);
 		if (p.first >= 0 && p.second >= 0 && p.first < FRAME_WIDTH && p.second < FRAME_HEIGHT &&
 			black != isBlack(img[(p.first + p.second * FRAME_WIDTH) * c])) {
 			return true;
@@ -61,14 +68,15 @@ bool getAdjacentDiffer(unsigned char* img, int i) {
 	return false;
 }
 
-std::vector<int> getAdjacent(int i) {
+std::vector<int> getAdjacent(unsigned char *img, int i) {
 	int x = i % FRAME_WIDTH;
 	int y = i / FRAME_WIDTH;
 	std::vector<int> result;
 	result.reserve(8);
-	for (std::size_t m = 0; m < matrix.size(); m++) {
-		std::pair<int, int> p(x + matrix[m].first, y + matrix[m].second);
-		if (p.first >= 0 && p.second >= 0 && p.first < FRAME_WIDTH && p.second < FRAME_HEIGHT) {
+	for (std::size_t m = 0; m < matrixRedPill.size(); m++) {
+		std::pair<int, int> p(x + matrixRedPill[m].first, y + matrixRedPill[m].second);
+		if (p.first >= 0 && p.second >= 0 && p.first < FRAME_WIDTH && p.second < FRAME_HEIGHT &&
+			isBlack(img[(p.first + p.second * FRAME_WIDTH) * c])) {
 			result.push_back(p.first + p.second * FRAME_WIDTH);
 		}
 	}
@@ -84,6 +92,7 @@ int main() {
 	std::array<bool, FRAME_SIZE> setMap;
 	std::array<char, 128> pathBuffer;
 	std::vector<std::vector<int>> paths;
+	std::vector<std::vector<int>> pathsPruned;
 
 	for (int f = 1;; f++) {
 		snprintf(pathBuffer.data(), pathBuffer.size(), "C:\\Users\\musselmano\\source\\repos\\l1-loopy-cturtles-KeinR\\frames\\%.4i.png", f);
@@ -111,6 +120,7 @@ int main() {
 
 		memset(setMap.data(), 0, sizeof(bool) * setMap.size());
 		paths.clear();
+		pathsPruned.clear();
 
 		for (int i = 0; i < FRAME_SIZE; i++) {
 			if (setMap[i]) continue;
@@ -123,8 +133,8 @@ int main() {
 					path.push_back(locus);
 					setMap[locus] = true;
 					good = false;
-					for (int n : getAdjacent(i)) {
-						if (!setMap[n] && getAdjacentDiffer(img, i)) {
+					for (int n : getAdjacent(img, locus)) {
+						if (!setMap[n] && getAdjacentDiffer(img, n)) {
 							good = true;
 							locus = n;
 							break;
@@ -132,19 +142,43 @@ int main() {
 					}
 				} while (locus != path.front() && good);
 
-				paths.push_back(std::move(path));
+				paths.push_back((path));
 			}
 
 		}
+
 		stbi_image_free(img);
 
 		std::cout << "Begin draw...\n";
+
+		if (paths.size() == 0) continue;
 
 		t.reset();
 		t.hideturtle();
 		t.speed(ct::TS_FASTEST);
 
+		// Prune path length
+
 		for (std::vector<int>& p : paths) {
+			std::vector<int> pruned;
+			for (std::size_t i = 0; i < p.size(); i++) {
+				pruned.push_back(p[i]);
+			}
+			pathsPruned.push_back((pruned));
+		}
+
+		/*
+		pathsPruned.clear();
+		for (std::vector<int>& p : paths) {
+			std::vector<int> pruned;
+			pruned.push_back(p.front());
+			pruned.push_back(p.back());
+			pathsPruned.push_back(pruned);
+		}
+		*/
+
+		for (std::vector<int>& p : pathsPruned) {
+			std::cout << "  ...//\n";
 			int sx, sy;
 			toCturtle(p.front(), &sx, &sy);
 			t.penup();
@@ -153,7 +187,7 @@ int main() {
 			for (int i : p) {
 				int x, y;
 				toCturtle(i, &x, &y);
-			    // std::cout << "    " << x << ", " << y << '\n';
+			    std::cout << "    " << x << ", " << y << '\n';
 				t.goTo(x, y);
 			}
 		}
