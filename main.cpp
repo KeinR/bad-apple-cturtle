@@ -114,8 +114,12 @@ int main() {
 
 	ct::TurtleScreen screen(FRAME_WIDTH, FRAME_HEIGHT);
 	screen.bgcolor({ "white" });
-	ct::Turtle t(screen);
+	ct::Turtle t1(screen);
+	ct::Turtle t2(screen);
+	std::array<ct::Turtle*, 2> tdbuf = {&t1, &t2};
+	int ti = 0;
 
+	
 	std::array<bool, FRAME_SIZE> setMap;
 	std::array<char, 128> pathBuffer;
 	std::vector<std::vector<int>> paths;
@@ -180,10 +184,7 @@ int main() {
 
 		if (paths.size() == 0) continue;
 
-		t.reset();
-		t.hideturtle();
-		t.speed(ct::TS_FASTEST);
-
+		
 		// Prune path length
 		for (std::vector<int>& p : paths) {
 			if (p.size() <= 1) continue;
@@ -248,6 +249,9 @@ int main() {
 			}
 		}
 
+		int tin = (ti + 1) % tdbuf.size();
+		ct::Turtle& t = *tdbuf[tin];
+
 		for (std::vector<int>& p : pathsPruned) {
 			std::cout << "  ...//\n";
 			int sx, sy;
@@ -262,6 +266,15 @@ int main() {
 				t.goTo(x, y);
 			}
 		}
+
+		ct::Turtle& tt = *tdbuf[ti];
+		tt.reset();
+		tt.hideturtle();
+		tt.speed(ct::TS_FASTEST);
+		tt.penup();
+		tt.goTo(1000, 1000);
+
+		ti = tin;
 
 		std::cout << "Paths = " << paths.size() << ", frame #" << f << '\n';
 	}
