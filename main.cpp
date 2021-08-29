@@ -216,14 +216,20 @@ int main() {
 					ptin.y = inr.m * ptin.x + inr.b;
 					// std::cout << "------ CHECK -----: inr.m=" << inr.m << ", inr.b=" << inr.b << ", line.m=" << line.m << " : ";
 				}
+
 				// Distance to inersection from here
-				double dev = std::sqrt(std::pow(ptin.x - g.x, 2) + std::pow(ptin.y - g.y, 2));
+				// double dev = std::sqrt(std::pow(ptin.x - g.x, 2) + std::pow(ptin.y - g.y, 2));
 				// Length of line `line` from locus to intersection
-				double ll = std::sqrt(std::pow(ptin.x - lo.x, 2) + std::pow(ptin.y - lo.y, 2));
+				// double ll = std::sqrt(std::pow(ptin.x - lo.x, 2) + std::pow(ptin.y - lo.y, 2));
 				// Now we change the axis here to be based on 
 				// `line`, (or from g to ptin, doesn't matter)
 				// so that we can solve for the area
-				double loss = (dev * ll) / 2.0;
+				// double loss = (dev * ll) / 2.0;
+
+				// Remove one square root
+				double dev = (std::pow(ptin.x - g.x, 2) + std::pow(ptin.y - g.y, 2));
+				double ll = (std::pow(ptin.x - lo.x, 2) + std::pow(ptin.y - lo.y, 2));
+				double loss = std::sqrt(dev * ll) / 2.0;
 
 				// std::cout << "Distance = " << ll << " loss = " << loss << " dev = " << dev << '\n' << std::flush;
 
