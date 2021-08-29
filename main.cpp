@@ -3,6 +3,12 @@
  * Author: Orion Musselman 
  */
 
+/*
+* TODO:
+* - Fix disconnecting line ends when quality loss is high 
+* - Speed up CTurtle drawing
+*/
+
 #define STB_IMAGE_IMPLEMENTATION
 
 #include "include/stb_image.h"
@@ -21,7 +27,7 @@
 
 #define NDEBUG
 
-#define MAX_QUALITY_LOSS 300
+#define MAX_QUALITY_LOSS 40 
 
 struct vec_t {
 	double x;
@@ -253,7 +259,7 @@ int main() {
 		ct::Turtle& t = *tdbuf[tin];
 
 		for (std::vector<int>& p : pathsPruned) {
-			std::cout << "  ...//\n";
+			// std::cout << "  ...//\n";
 			int sx, sy;
 			toCturtle(p.front(), &sx, &sy);
 			t.penup();
@@ -262,7 +268,7 @@ int main() {
 			for (int i : p) {
 				int x, y;
 				toCturtle(i, &x, &y);
-			    std::cout << "    " << x << ", " << y << '\n';
+			    // std::cout << "    " << x << ", " << y << '\n';
 				t.goTo(x, y);
 			}
 		}
