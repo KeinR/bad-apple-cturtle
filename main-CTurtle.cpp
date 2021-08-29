@@ -80,7 +80,6 @@ int main() {
 	ct::TurtleScreen screen(FRAME_WIDTH, FRAME_HEIGHT);
 	screen.bgcolor({ "white" });
 	ct::Turtle t(screen);
-	t.speed(ct::TS_FASTEST);
 
 	std::array<bool, FRAME_SIZE> setMap;
 	std::array<char, 128> pathBuffer;
@@ -141,10 +140,9 @@ int main() {
 
 		std::cout << "Begin draw...\n";
 
-		// screen.clearscreen();
-
-		// screen.bgcolor({ "white" });
-		// t.goTo(-FRAME_WIDTH / 2, FRAME_HEIGHT / 2);
+		t.reset();
+		t.hideturtle();
+		t.speed(ct::TS_FASTEST);
 
 		for (std::vector<int>& p : paths) {
 			int sx, sy;
