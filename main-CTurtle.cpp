@@ -33,8 +33,13 @@ std::array<std::pair<int, int>, 8> matrix = {
 
 constexpr int c = 3;
 
+void toCturtle(int i, int* x, int* y) {
+	*x = i % FRAME_WIDTH - FRAME_WIDTH / 2;
+	*y = FRAME_HEIGHT - (i / FRAME_WIDTH + FRAME_HEIGHT / 2);
+}
+
 bool isBlack(int r) {
-	return r < 255 / 2;
+	return r < 10;
 }
 
 // Get Adjacent differ ONLY IF this node is black
@@ -48,7 +53,6 @@ bool getAdjacentDiffer(unsigned char* img, int i) {
 		std::pair<int, int> p(x + matrix[m].first, y + matrix[m].second);
 		if (p.first >= 0 && p.second >= 0 && p.first < FRAME_WIDTH && p.second < FRAME_HEIGHT &&
 			black != isBlack(img[(p.first + p.second * FRAME_WIDTH) * c])) {
-			abort();
 			return true;
 		}
 	}
@@ -60,11 +64,10 @@ std::vector<int> getAdjacent(int i) {
 	int y = i / FRAME_WIDTH;
 	std::vector<int> result;
 	result.reserve(8);
-	for (std::size_t m = 0; i < matrix.size(); i++) {
+	for (std::size_t m = 0; m < matrix.size(); m++) {
 		std::pair<int, int> p(x + matrix[m].first, y + matrix[m].second);
 		if (p.first >= 0 && p.second >= 0 && p.first < FRAME_WIDTH && p.second < FRAME_HEIGHT) {
 			result.push_back(p.first + p.second * FRAME_WIDTH);
-			abort();
 		}
 	}
 	return result;
@@ -72,7 +75,7 @@ std::vector<int> getAdjacent(int i) {
 
 int main() {
 
-	ct::TurtleScreen screen;
+	ct::TurtleScreen screen(FRAME_WIDTH, FRAME_HEIGHT);
 	screen.bgcolor({ "white" });
 	ct::Turtle t(screen);
 	t.speed(ct::TS_FASTEST);
@@ -106,19 +109,10 @@ int main() {
 		memset(setMap.data(), 0, sizeof(bool) * setMap.size());
 		paths.clear();
 
-		if (isBlack(img[(100 + 100 * FRAME_WIDTH) * c]) != isBlack(img[(101 + 100 * FRAME_WIDTH) * c])) {
-			// abort();
-		}
-
 		for (int i = 0; i < FRAME_SIZE; i++) {
 			if (setMap[i]) continue;
-			if (i + 1 < FRAME_SIZE && (i+1) % FRAME_WIDTH != 0 && isBlack(img[i * c]) != isBlack(img[(i + 1) * c])) {
-				abort();
-			}
 
 			if (getAdjacentDiffer(img, i)) {
-				std::cout << "UESUSEFHOISEHGOESGO" << std::flush;
-				abort();
 				std::vector<int> path;
 				int locus = i;
 				bool good = false;
@@ -145,20 +139,22 @@ int main() {
 
 		// screen.clearscreen();
 
-		/*
+		// screen.bgcolor({ "white" });
+		// t.goTo(-FRAME_WIDTH / 2, FRAME_HEIGHT / 2);
+
 		for (std::vector<int>& p : paths) {
-			int sx = p.front() % FRAME_WIDTH;
-			int sy = p.front() / FRAME_WIDTH;
+			int sx, sy;
+			toCturtle(p.front(), &sx, &sy);
+			t.penup();
 			t.goTo(sx, sy);
 			t.pendown();
 			for (int i : p) {
-				int x = i % FRAME_WIDTH;
-				int y = i / FRAME_WIDTH;
-				std::cout << "    " << x << ", " << y << '\n';
+				int x, y;
+				toCturtle(i, &x, &y);
+			    // std::cout << "    " << x << ", " << y << '\n';
 				t.goTo(x, y);
 			}
 		}
-		*/
 
 		std::cout << "Paths = " << paths.size() << ", frame #" << f << '\n';
 	}
