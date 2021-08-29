@@ -9,6 +9,7 @@
 #include "include/CTurtle.hpp";
 
 #include <cstdio>
+#include <cmath>
 #include <array>
 #include <vector>
 #include <iostream>
@@ -19,6 +20,18 @@
 #define FRAME_SIZE (FRAME_WIDTH * FRAME_HEIGHT)
 
 #define NDEBUG
+
+#define MAX_QUALITY_LOSS 300
+
+struct vec_t {
+	double x;
+	double y;
+};
+
+struct line_t {
+	double m;
+	double b;
+};
 
 namespace ct = cturtle;
 
@@ -47,8 +60,22 @@ void toCturtle(int i, int* x, int* y) {
 	*y = FRAME_HEIGHT - (i / FRAME_WIDTH + FRAME_HEIGHT / 2);
 }
 
+void toCoords(int i, double* x, double* y) {
+	*x = i % FRAME_WIDTH;
+	*y = i / FRAME_WIDTH;
+}
+
 bool isBlack(int r) {
 	return r < 40;
+}
+
+void mkLocus(const std::vector<int>& p, int i, vec_t* lo, vec_t* enp, line_t* line) {
+	toCoords(p[i], &lo->x, &lo->y);
+	toCoords(p[i + 1], &enp->x, &enp->y);
+	// y = mx + b
+	if (lo->x == enp->x) line->m = std::nan("");
+	else line->m = (lo->y - enp->y) / (lo->x - enp->x); // m
+	line->b = lo->y - lo->x * line->m; // b
 }
 
 // Get Adjacent differ ONLY IF this node is black
@@ -149,7 +176,7 @@ int main() {
 
 		stbi_image_free(img);
 
-		std::cout << "Begin draw...\n";
+		std::cout << (1 / std::nextafter(0, 1.0)) << "Begin draw...\n";
 
 		if (paths.size() == 0) continue;
 
@@ -158,24 +185,62 @@ int main() {
 		t.speed(ct::TS_FASTEST);
 
 		// Prune path length
-
 		for (std::vector<int>& p : paths) {
+			if (p.size() <= 1) continue;
 			std::vector<int> pruned;
-			for (std::size_t i = 0; i < p.size(); i++) {
-				pruned.push_back(p[i]);
+
+			vec_t lo, enp;
+			line_t line;
+			mkLocus(p, 0, &lo, &enp, &line);
+			int cx = 0;
+			
+			for (std::size_t i = 2; i < p.size(); i++) {
+				vec_t g;
+				toCoords(p[i], &g.x, &g.y);
+				// Point of intersection
+				vec_t ptin;
+				if (std::isnan(line.m)) {
+					ptin.x = lo.x;
+					ptin.y = g.y;
+				}
+				else if (line.m == 0) {
+					ptin.x = g.x;
+					ptin.y = lo.y;
+				}
+				else {
+					// Perpendicular
+					line_t inr;
+					inr.m = -1.0 / line.m;
+					inr.b = g.y - g.x * inr.m;
+					ptin.x = (inr.b - line.b) / (line.m - inr.m);
+					ptin.y = inr.m * ptin.x + inr.b;
+					// std::cout << "------ CHECK -----: inr.m=" << inr.m << ", inr.b=" << inr.b << ", line.m=" << line.m << " : ";
+				}
+				// Distance to inersection from here
+				double dev = std::sqrt(std::pow(ptin.x - g.x, 2) + std::pow(ptin.y - g.y, 2));
+				// Length of line `line` from locus to intersection
+				double ll = std::sqrt(std::pow(ptin.x - lo.x, 2) + std::pow(ptin.y - lo.y, 2));
+				// Now we change the axis here to be based on 
+				// `line`, (or from g to ptin, doesn't matter)
+				// so that we can solve for the area
+				double loss = (dev * ll) / 2.0;
+
+				// std::cout << "Distance = " << ll << " loss = " << loss << " dev = " << dev << '\n' << std::flush;
+
+
+				if (loss > MAX_QUALITY_LOSS || i + 1 > p.size()) {
+					pruned.push_back(p[i]);
+					if (i + 1 < p.size()) {
+						mkLocus(p, i, &lo, &enp, &line);
+						cx = i;
+						i++;
+					}
+				}
 			}
-			pathsPruned.push_back((pruned));
+			if (pruned.size() > 1) {
+				pathsPruned.push_back((pruned));
+			}
 		}
-
-		/*
-		pathsPruned.clear();
-		for (std::vector<int>& p : paths) {
-			std::vector<int> pruned;
-			pruned.push_back(p.front());
-			pruned.push_back(p.back());
-			pathsPruned.push_back(pruned);
-		}
-		*/
 
 		for (std::vector<int>& p : pathsPruned) {
 			std::cout << "  ...//\n";
