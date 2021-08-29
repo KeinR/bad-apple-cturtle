@@ -18,6 +18,8 @@
 #define FRAME_HEIGHT 360
 #define FRAME_SIZE (FRAME_WIDTH * FRAME_HEIGHT)
 
+#define NDEBUG
+
 namespace ct = cturtle;
 
 std::array<std::pair<int, int>, 8> matrix = {
@@ -100,11 +102,13 @@ int main() {
 			std::cerr << "CRITICAL: Invalid frame size\n";
 			return 1;
 		}
+
+#ifndef NDEBUG
 		snprintf(pathBuffer.data(), pathBuffer.size(), "C:\\Users\\musselmano\\source\\repos\\l1-loopy-cturtles-KeinR\\hexdump\\%.4i.bin", f);
 		std::ofstream hex(pathBuffer.data(), std::ios::binary | std::ios::out | std::ios::trunc);
 		hex.write((char *) img, FRAME_SIZE * c);
 		hex.close();
-
+#endif
 
 		memset(setMap.data(), 0, sizeof(bool) * setMap.size());
 		paths.clear();
