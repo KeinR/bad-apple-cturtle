@@ -410,6 +410,8 @@ int main() {
 	// Stops the sound if it's still playing
 	// https://docs.microsoft.com/en-us/previous-versions/dd743680(v=vs.85)
 	// Dunno' if this is thread safe though...
+	// ... well, it should be, since there's an option to play it async.
+	// "Should be."
 	PlaySound(NULL, NULL, NULL);
 	e.join();
 
