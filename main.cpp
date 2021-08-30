@@ -15,7 +15,6 @@
 #include <vector>
 #include <iostream>
 #include <utility>
-// #include <mutex>
 #include <deque>
 #include <atomic>
 
@@ -172,15 +171,13 @@ void worker(state_t *s) {
 		int ix, iy;
 		unsigned char* img = stbi_load(pathBuffer.data(), &ix, &iy, nullptr, c);
 		if (img == nullptr) {
-			// Well, it seems we're at the end of the road
-			// I think
-			// Bad idea?
-			std::cout << "Exiting early, load failed.\n";
-			std::cout << stbi_failure_reason();
+			// Oh no
+			std::cout << "Thread #" << std::this_thread::get_id() << " here, CRITICAL: Could not load image: ";
+			std::cout << stbi_failure_reason() << ". Terminating..." << '\n';
 			break;
 		}
 		if (ix != FRAME_WIDTH || iy != FRAME_HEIGHT) {
-			std::cerr << "CRITICAL: Invalid frame size\n";
+			std::cerr << "Thread #" << std::this_thread::get_id() << " here, CRITICAL: Invalid frame size. Terminating...\n";
 			break;
 		}
 
