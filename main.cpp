@@ -119,6 +119,7 @@ std::vector<int> getAdjacent(unsigned char *img, int i) {
 int main() {
 
 	ct::TurtleScreen screen(FRAME_WIDTH, FRAME_HEIGHT);
+	screen.tracer(0, 0);
 	screen.bgcolor({ "white" });
 	ct::Turtle t1(screen);
 	ct::Turtle t2(screen);
