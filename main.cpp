@@ -5,8 +5,7 @@
 
 /*
 * TODO:
-* - Speed up CTurtle drawing
-* - Multithreaded frame preprocessing
+* - Sound
 */
 
 #define STB_IMAGE_IMPLEMENTATION
