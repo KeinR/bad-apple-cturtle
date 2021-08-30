@@ -50,6 +50,14 @@ https://www.youtube.com/watch?v=FtutLA63Cp8
 *Anata no koto mo watashi no koto mo subete no koto mo mada shiranai no*
 *Omoi mabuta wo aketa no naraba subete kowasu no nara kuro ni nare!!!*
 
+# NOTE
+
+**You will need to download the video with youtube-dl and convert the frames with ffmpeg.**
+The script `init.cmd` will do that for you, but you need the youtube-dl and ffmpeg
+binaries (youtube-dl.exe and ffmpeg.exe) on your PATH.
+
+I would include them here, but I'm not entirely sure of the technical legality of that.
+
 ### Author:
 - Author: Orion Musselman
 
