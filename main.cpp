@@ -5,7 +5,6 @@
 
 /*
 * TODO:
-* - Fix disconnecting line ends when quality loss is high 
 * - Speed up CTurtle drawing
 */
 
@@ -187,20 +186,24 @@ int main() {
 
 		stbi_image_free(img);
 
-		std::cout << (1 / std::nextafter(0, 1.0)) << "Begin draw...\n";
+		// std::cout << "Begin draw...\n";
 
-		if (paths.size() == 0) continue;
-
-		
 		// Prune path length
 		for (std::vector<int>& p : paths) {
+			// We call front() and back()
 			if (p.size() <= 1) continue;
+			// Drop small paths
+			// This will typically be stuff like dots and whatnot
+			// That are numerous and slow down everything
+			if (p.size() <= 20) continue;
 			std::vector<int> pruned;
 
 			vec_t lo, enp;
 			line_t line;
 			mkLocus(p, 0, &lo, &enp, &line);
 			int cx = 0;
+
+			pruned.push_back(p.front());
 			
 			for (std::size_t i = 2; i < p.size(); i++) {
 				vec_t g;
@@ -242,15 +245,14 @@ int main() {
 				// std::cout << "Distance = " << ll << " loss = " << loss << " dev = " << dev << '\n' << std::flush;
 
 
-				if (loss > MAX_QUALITY_LOSS || i + 1 > p.size()) {
+				if (loss > MAX_QUALITY_LOSS && i + 1 < p.size()) {
 					pruned.push_back(p[i]);
-					if (i + 1 < p.size()) {
-						mkLocus(p, i, &lo, &enp, &line);
-						cx = i;
-						i++;
-					}
+					mkLocus(p, i, &lo, &enp, &line);
+					cx = i;
+					i++;
 				}
 			}
+			pruned.push_back(p.back());
 			if (pruned.size() > 1) {
 				pathsPruned.push_back((pruned));
 			}
