@@ -325,11 +325,20 @@ int main() {
 	constexpr std::time_t millisPerFrame = 1000 / 30;
 	std::time_t nextFrameTime = 0;
 
+	// Wait for the first few frames to prepare so that
+	// Sound synchs better
+	while (!state.frames[4].done.load());
+
+	// https://stackoverflow.com/questions/9961949/playsound-in-c-console-application
+	// https://stackoverflow.com/questions/21339776/linking-to-winmm-dll-in-visual-studio-2013-express-for-mcisendstring#21340391
 	PlaySound(TEXT("audio.wav"), NULL, SND_FILENAME | SND_ASYNC);
 
 	for (int f = 0; f < NUM_FRAMES; f++) {
-		while (nextFrameTime > millis() || !state.frames[f].done.load());
+		while (nextFrameTime > millis());
 		nextFrameTime = millis() + millisPerFrame;
+		// Time waiting for load included in frame render time
+		// Better FPS & sound sync
+		while (!state.frames[f].done.load());
 		// std::cout << "draw\n" << std::flush;
 
 		int tin = (ti + 1) % tdbuf.size();
