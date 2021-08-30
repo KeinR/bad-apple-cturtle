@@ -165,7 +165,9 @@ Now with the steps the path takes (0 = not touched by path):
 
 Notice how the path is completely valid, and yet, it is stopped at 4?
 This issue is fixed by requiring that each new locus have adjacent white
-nodes HORIZONTALLY or VERTICALLY, NOT DIAGONALLY.
+nodes HORIZONTALLY or VERTICALLY, NOT DIAGONALLY. This is apparent in the static
+arrays `matrixRedPill` and `matrixBluePill`. Their names have contextual meaning,
+but it's not that deep so don't try too hard.
 
 The next issue to tackle, now that the paths are complete, is to prune them so that drawing
 is faster. Honestly, the speed of the previous operations isn't really important given
@@ -196,10 +198,36 @@ by double buffering woes of the last buffer being visible.
 
 It looks really good at this point, but still a little slow.
 
+Then I got a amazing idea.
 
+Multithreading!
 
+The bottleneack was now no longer the drawing, but the pre-processing of each frame.
+I benchmarked the frame processing, and saw that each frame took ~0.1 seconds to process.
+That's 10 frames per second.
 
-*FIXME*
+The freshmen computers (one of which I am so privilaged to have) have four cores.
+8 logical threads, but is that really cores??? What are even logical threads???
+
+Anyways, that means I could probobly do well with like four threads, I guess five plus
+the main thread.
+
+Each worker thread will be started with a state structure. The state will contain some
+flags and the frame buffer (two words, not one). Each frame is a single index, so threads
+can work on multible frames at the same time. When looking for a frame to work on, a thread
+will start from the index of the rendering frame and iterate over each other frame and
+check for one not being worked on by another thread, then work on that frame. The main
+thread will traverse the array linearly, only rendering a frame if it has been marked
+as completed.
+
+This resulted in a speed up so dramatic that the frames are now rendered at 30 frames
+per second - just like the original video! Success!
+
+Perhaps a better way of distributing the frame work would be having each thread
+be assigned a number, 0, 1, 2 3, and then increment that number by 4 each time.
+That way, it will never hit another frame that is worked on by another thread,
+and there is no need to iterate, and the frames will be completed in a progressive
+manner. 
 
 7. **ERRORS**
 *List in bulleted form of all known errors 
