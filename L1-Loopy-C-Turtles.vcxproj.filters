@@ -33,6 +33,7 @@
   <ItemGroup>
     <None Include="README.md" />
     <None Include="init.cmd" />
+    <None Include=".gitignore" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="LICENSE.txt" />
