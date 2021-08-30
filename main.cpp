@@ -26,6 +26,7 @@
 #define FRAME_HEIGHT 360
 #define FRAME_SIZE (FRAME_WIDTH * FRAME_HEIGHT)
 #define NUM_FRAMES 6572
+#define FRAMES_PER_SEC 30
 
 #define NDEBUG
 
@@ -336,7 +337,7 @@ int main() {
 	std::thread e(soundWorker, &state);
 
 	// 30 frames per second from original video
-	constexpr double millisPerFrame = 1000.0 / 30.0;
+	double millisPerFrame = 1000.0 / FRAMES_PER_SEC;
 	double nextFrameTime = 0;
 
 	// Wait for the first few frames to prepare so that
@@ -348,10 +349,25 @@ int main() {
 	while (!state.soundReady.load());
 	state.videoReady.store(true);
 
+	std::time_t lastTime = millis();
+	const std::time_t timeStarted = lastTime;
+
 	for (int f = 0; f < NUM_FRAMES; f++) {
 		// ANIMATION IS TOO SLOW!?!?
 		while ((std::time_t)nextFrameTime >= millis());
-		nextFrameTime = millis() + millisPerFrame;
+		std::time_t now = millis();
+		nextFrameTime = now + millisPerFrame;
+		if (now - lastTime >= 1000) {
+			lastTime = now;
+			double seconds = (lastTime - timeStarted) / 1000.0;
+			double expectedFrames = seconds * FRAMES_PER_SEC;
+			double diff = expectedFrames - f;
+			// Increase or decrease # frames for this second to compensate
+			// For however many frames we are ahead/behind
+			double fps = FRAMES_PER_SEC + diff;
+			millisPerFrame = 1000.0 / fps;
+			std::cout << "millisPerFrame = " << millisPerFrame << ", seconds elapsed = " << seconds << ", lost frames = " << diff << '\n' << std::flush;
+		}
 		// Time waiting for load included in frame render time
 		// Better FPS & sound sync
 		while (!state.frames[f].done.load());
