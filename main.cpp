@@ -6,6 +6,7 @@
 /*
 * TODO:
 * - Speed up CTurtle drawing
+* - Multithreaded frame preprocessing
 */
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -26,7 +27,7 @@
 
 #define NDEBUG
 
-#define MAX_QUALITY_LOSS 40 
+#define MAX_QUALITY_LOSS 100
 
 struct vec_t {
 	double x;
@@ -186,7 +187,7 @@ int main() {
 
 		stbi_image_free(img);
 
-		// std::cout << "Begin draw...\n";
+		std::cout << "Begin draw...\n";
 
 		// Prune path length
 		for (std::vector<int>& p : paths) {
