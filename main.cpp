@@ -29,8 +29,21 @@
 
 #define NDEBUG
 
+// --- USER MODIFIABLE DEFS ---
+
+// How much quality we can afford to loose.
+// (higher values result in lower quality video)
 #define MAX_QUALITY_LOSS 10
+// Number of frames to load before starting.
+// Setting this too high might cause a significant
+// wait at startup before the video plays
 #define FRAMES_PRELOAD 4
+// Number of frames to cache.
+// If too low, FPS may drop below 30.
+// If too high, will use lots of memory.
+#define FRAME_BUFFER_SIZE 60
+
+// --- END USER MODIFIABLE DEFS ---
 
 struct vec_t {
 	double x;
@@ -163,6 +176,10 @@ void worker(state_t *s) {
 		if (!got) {
 			break;
 		}
+		// Don't use too much memory; wait for render to catch up
+		while (f - s->currentFrame.load() > FRAME_BUFFER_SIZE && s->alive.load());
+
+		if (!s->alive.load()) break;
 
 
 		std::time_t timeBegin = millis();
@@ -390,6 +407,10 @@ int main() {
 				t.goTo(x, y);
 			}
 		}
+
+		// Delete frame path now that we're done with it
+		// Apparently: https://www.cplusplus.com/reference/vector/vector/clear/
+		std::vector<std::vector<int>>().swap(state.frames[f].path);
 
 		ct::Turtle& tt = *tdbuf[ti];
 		tt.reset();
