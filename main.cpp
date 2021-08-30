@@ -229,7 +229,7 @@ void worker(state_t *s) {
 					}
 				} while (locus != path.front() && good);
 
-				paths.push_back((path));
+				paths.push_back(std::move(path));
 			}
 
 		}
@@ -305,7 +305,7 @@ void worker(state_t *s) {
 			}
 			pruned.push_back(p.back());
 			if (pruned.size() > 1) {
-				pathsPruned.push_back((pruned));
+				pathsPruned.push_back(std::move(pruned));
 			}
 		}
 
