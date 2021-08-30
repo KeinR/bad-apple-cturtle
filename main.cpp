@@ -164,8 +164,8 @@ void worker(state_t *s) {
 
 
 		std::time_t timeBegin = millis();
-																													// File ID is one more than index
-		snprintf(pathBuffer.data(), pathBuffer.size(), "C:\\Users\\musselmano\\source\\repos\\l1-loopy-cturtles-KeinR\\frames\\%.4i.png", f + 1);
+		// File ID is one more than index
+		snprintf(pathBuffer.data(), pathBuffer.size(), "../frames/%.4i.png", f + 1);
 		int ix, iy;
 		unsigned char* img = stbi_load(pathBuffer.data(), &ix, &iy, nullptr, c);
 		if (img == nullptr) {
