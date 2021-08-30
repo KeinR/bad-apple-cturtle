@@ -51,6 +51,8 @@ struct frame_t {
 struct state_t {
 	std::atomic_int currentFrame;
 	std::atomic_bool alive;
+	std::atomic_bool soundReady;
+	std::atomic_bool videoReady;
 	std::array<frame_t, NUM_FRAMES> frames;
 };
 
@@ -298,6 +300,14 @@ void worker(state_t *s) {
 	}
 }
 
+void soundWorker(state_t* s) {
+	s->soundReady.store(true);
+	while (!s->videoReady.load());
+	// https://stackoverflow.com/questions/9961949/playsound-in-c-console-application
+	// https://stackoverflow.com/questions/21339776/linking-to-winmm-dll-in-visual-studio-2013-express-for-mcisendstring#21340391
+	PlaySound(TEXT("audio.wav"), NULL, SND_FILENAME | SND_SYNC);
+}
+
 int main() {
 	system("echo cd = %cd%");
 
@@ -312,6 +322,8 @@ int main() {
 	state_t state;
 	state.currentFrame.store(0);
 	state.alive.store(true);
+	state.soundReady.store(true);
+	state.videoReady.store(true);
 	for (frame_t& f : state.frames) {
 		f.taken.store(false);
 		f.done.store(false);
@@ -321,6 +333,7 @@ int main() {
 	std::thread b(worker, &state);
 	std::thread c(worker, &state);
 	std::thread d(worker, &state);
+	std::thread e(soundWorker, &state);
 
 	// 30 frames per second from original video
 	constexpr double millisPerFrame = 1000.0 / 30.0;
@@ -330,12 +343,14 @@ int main() {
 	// Sound synchs better
 	while (!state.frames[FRAMES_PRELOAD].done.load());
 
-	// https://stackoverflow.com/questions/9961949/playsound-in-c-console-application
-	// https://stackoverflow.com/questions/21339776/linking-to-winmm-dll-in-visual-studio-2013-express-for-mcisendstring#21340391
-	PlaySound(TEXT("audio.wav"), NULL, SND_FILENAME | SND_ASYNC);
+	// Sync with the sound worker
+	// (threads take a moment to init)
+	while (!state.soundReady.load());
+	state.videoReady.store(true);
 
 	for (int f = 0; f < NUM_FRAMES; f++) {
-		while (nextFrameTime > (double)millis());
+		// ANIMATION IS TOO SLOW!?!?
+		while ((std::time_t)nextFrameTime >= millis());
 		nextFrameTime = millis() + millisPerFrame;
 		// Time waiting for load included in frame render time
 		// Better FPS & sound sync
@@ -379,6 +394,11 @@ int main() {
 	b.join();
 	c.join();
 	d.join();
+	// Stops the sound if it's still playing
+	// https://docs.microsoft.com/en-us/previous-versions/dd743680(v=vs.85)
+	// Dunno' if this is thread safe though...
+	PlaySound(NULL, NULL, NULL);
+	e.join();
 
 	return 0;
 }
