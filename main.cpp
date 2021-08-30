@@ -16,18 +16,23 @@
 
 #include <cstdio>
 #include <cmath>
+#include <ctime>
 #include <array>
 #include <vector>
 #include <iostream>
 #include <utility>
+// #include <mutex>
+#include <deque>
+#include <atomic>
 
 #define FRAME_WIDTH 480
 #define FRAME_HEIGHT 360
 #define FRAME_SIZE (FRAME_WIDTH * FRAME_HEIGHT)
+#define NUM_FRAMES 6572
 
 #define NDEBUG
 
-#define MAX_QUALITY_LOSS 100
+#define MAX_QUALITY_LOSS 10
 
 struct vec_t {
 	double x;
@@ -37,6 +42,18 @@ struct vec_t {
 struct line_t {
 	double m;
 	double b;
+};
+
+struct frame_t {
+	std::atomic_bool taken;
+	std::atomic_bool done;
+	std::vector<std::vector<int>> path;
+};
+
+struct state_t {
+	std::atomic_int currentFrame;
+	std::atomic_bool alive;
+	std::array<frame_t, NUM_FRAMES> frames;
 };
 
 namespace ct = cturtle;
@@ -61,14 +78,21 @@ std::array<std::pair<int, int>, 4> matrixBluePill = {
 
 constexpr int c = 3;
 
+std::time_t millis() {
+	// Modifed from https://stackoverflow.com/questions/19555121/how-to-get-current-timestamp-in-milliseconds-since-1970-just-the-way-java-gets
+	// And here: https://stackoverflow.com/questions/20785687/get-an-unsigned-int-milliseconds-out-of-chronoduration
+	return std::chrono::duration_cast<std::chrono::milliseconds>(
+		std::chrono::system_clock::now().time_since_epoch()
+	).count();
+}
+
 void toCturtle(int i, int* x, int* y) {
 	*x = i % FRAME_WIDTH - FRAME_WIDTH / 2;
 	*y = FRAME_HEIGHT - (i / FRAME_WIDTH + FRAME_HEIGHT / 2);
 }
 
 void toCoords(int i, double* x, double* y) {
-	*x = i % FRAME_WIDTH;
-	*y = i / FRAME_WIDTH;
+	*x = i % FRAME_WIDTH; *y = i / FRAME_WIDTH;
 }
 
 bool isBlack(int r) {
@@ -116,24 +140,33 @@ std::vector<int> getAdjacent(unsigned char *img, int i) {
 	return result;
 }
 
-int main() {
-
-	ct::TurtleScreen screen(FRAME_WIDTH, FRAME_HEIGHT);
-	screen.tracer(0, 0);
-	screen.bgcolor({ "white" });
-	ct::Turtle t1(screen);
-	ct::Turtle t2(screen);
-	std::array<ct::Turtle*, 2> tdbuf = {&t1, &t2};
-	int ti = 0;
-
-	
+void worker(state_t *s) {
 	std::array<bool, FRAME_SIZE> setMap;
 	std::array<char, 128> pathBuffer;
 	std::vector<std::vector<int>> paths;
 	std::vector<std::vector<int>> pathsPruned;
 
-	for (int f = 1;; f++) {
-		snprintf(pathBuffer.data(), pathBuffer.size(), "C:\\Users\\musselmano\\source\\repos\\l1-loopy-cturtles-KeinR\\frames\\%.4i.png", f);
+	while (s->alive.load()) {
+		// std::cout << "working...";
+		// Find open job
+		int f = -1;
+		bool got = false;
+		for (int i = s->currentFrame.load(); i < NUM_FRAMES; i++) {
+			if (!s->frames[i].taken.exchange(true)) {
+				// File number is 1 more than index
+				f = i;
+				got = true;
+				break;
+			}
+		}
+		if (!got) {
+			break;
+		}
+
+
+		std::time_t timeBegin = millis();
+																													// File ID is one more than index
+		snprintf(pathBuffer.data(), pathBuffer.size(), "C:\\Users\\musselmano\\source\\repos\\l1-loopy-cturtles-KeinR\\frames\\%.4i.png", f + 1);
 		int ix, iy;
 		unsigned char* img = stbi_load(pathBuffer.data(), &ix, &iy, nullptr, c);
 		if (img == nullptr) {
@@ -146,15 +179,15 @@ int main() {
 		}
 		if (ix != FRAME_WIDTH || iy != FRAME_HEIGHT) {
 			std::cerr << "CRITICAL: Invalid frame size\n";
-			return 1;
+			break;
 		}
 
-#ifndef NDEBUG
+	#ifndef NDEBUG
 		snprintf(pathBuffer.data(), pathBuffer.size(), "C:\\Users\\musselmano\\source\\repos\\l1-loopy-cturtles-KeinR\\hexdump\\%.4i.bin", f);
 		std::ofstream hex(pathBuffer.data(), std::ios::binary | std::ios::out | std::ios::trunc);
 		hex.write((char *) img, FRAME_SIZE * c);
 		hex.close();
-#endif
+	#endif
 
 		memset(setMap.data(), 0, sizeof(bool) * setMap.size());
 		paths.clear();
@@ -187,7 +220,7 @@ int main() {
 
 		stbi_image_free(img);
 
-		std::cout << "Begin draw...\n";
+		// std::cout << "Begin draw...\n";
 
 		// Prune path length
 		for (std::vector<int>& p : paths) {
@@ -196,7 +229,8 @@ int main() {
 			// Drop small paths
 			// This will typically be stuff like dots and whatnot
 			// That are numerous and slow down everything
-			if (p.size() <= 20) continue;
+			// BUT STARS ARE COOL!!!
+			// if (p.size() <= 20) continue;
 			std::vector<int> pruned;
 
 			vec_t lo, enp;
@@ -259,10 +293,51 @@ int main() {
 			}
 		}
 
+		// std::cout << "Thread #" << std::this_thread::get_id() << " here, Paths = " << paths.size() << ", frame #" << f << " in " << (millis() - timeBegin) << "ms" << '\n';
+		s->frames[f].path = pathsPruned;
+		s->frames[f].done.store(true);
+	}
+}
+
+int main() {
+
+	ct::TurtleScreen screen(FRAME_WIDTH, FRAME_HEIGHT);
+	screen.tracer(0, 0);
+	screen.bgcolor({ "white" });
+	ct::Turtle t1(screen);
+	ct::Turtle t2(screen);
+	std::array<ct::Turtle*, 2> tdbuf = {&t1, &t2};
+	int ti = 0;
+
+	state_t state;
+	state.currentFrame.store(0);
+	state.alive.store(true);
+	for (frame_t& f : state.frames) {
+		f.taken.store(false);
+		f.done.store(false);
+	}
+
+	std::thread a(worker, &state);
+	std::thread b(worker, &state);
+	std::thread c(worker, &state);
+	std::thread d(worker, &state);
+
+	// 30 frames per second from original video
+	constexpr std::time_t millisPerFrame = 1000 / 30;
+	std::time_t nextFrameTime = 0;
+
+	for (int f = 0; f < NUM_FRAMES; f++) {
+		while (nextFrameTime > millis() || !state.frames[f].done.load());
+		nextFrameTime = millis() + millisPerFrame;
+		// std::cout << "draw\n" << std::flush;
+
 		int tin = (ti + 1) % tdbuf.size();
 		ct::Turtle& t = *tdbuf[tin];
 
-		for (std::vector<int>& p : pathsPruned) {
+		frame_t& frame = state.frames[f];
+		state.currentFrame.store(f);
+
+		for (std::vector<int>& p : frame.path) {
 			// std::cout << "  ...//\n";
 			int sx, sy;
 			toCturtle(p.front(), &sx, &sy);
@@ -285,9 +360,14 @@ int main() {
 		tt.goTo(1000, 1000);
 
 		ti = tin;
-
-		std::cout << "Paths = " << paths.size() << ", frame #" << f << '\n';
 	}
+
+	state.alive.store(false);
+
+	a.join();
+	b.join();
+	c.join();
+	d.join();
 
 	return 0;
 }
