@@ -32,5 +32,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md" />
+    <None Include="init.cmd" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="LICENSE.txt" />
   </ItemGroup>
 </Project>

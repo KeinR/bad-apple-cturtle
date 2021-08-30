@@ -24,6 +24,9 @@
 #include <deque>
 #include <atomic>
 
+#include <windows.h>
+#include <mmsystem.h>
+
 #define FRAME_WIDTH 480
 #define FRAME_HEIGHT 360
 #define FRAME_SIZE (FRAME_WIDTH * FRAME_HEIGHT)
@@ -140,6 +143,7 @@ std::vector<int> getAdjacent(unsigned char *img, int i) {
 }
 
 void worker(state_t *s) {
+
 	std::array<bool, FRAME_SIZE> setMap;
 	std::array<char, 128> pathBuffer;
 	std::vector<std::vector<int>> paths;
@@ -165,7 +169,7 @@ void worker(state_t *s) {
 
 		std::time_t timeBegin = millis();
 		// File ID is one more than index
-		snprintf(pathBuffer.data(), pathBuffer.size(), "../frames/%.4i.png", f + 1);
+		snprintf(pathBuffer.data(), pathBuffer.size(), "frames/%.4i.png", f + 1);
 		int ix, iy;
 		unsigned char* img = stbi_load(pathBuffer.data(), &ix, &iy, nullptr, c);
 		if (img == nullptr) {
@@ -299,6 +303,7 @@ void worker(state_t *s) {
 }
 
 int main() {
+	system("echo cd = %cd%");
 
 	ct::TurtleScreen screen(FRAME_WIDTH, FRAME_HEIGHT);
 	screen.tracer(0, 0);
@@ -324,6 +329,8 @@ int main() {
 	// 30 frames per second from original video
 	constexpr std::time_t millisPerFrame = 1000 / 30;
 	std::time_t nextFrameTime = 0;
+
+	PlaySound(TEXT("audio.wav"), NULL, SND_FILENAME | SND_ASYNC);
 
 	for (int f = 0; f < NUM_FRAMES; f++) {
 		while (nextFrameTime > millis() || !state.frames[f].done.load());

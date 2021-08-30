@@ -262,6 +262,7 @@ Stack Exchange for many things. I don't have all the links, but the ones that I 
 - https://softwareengineering.stackexchange.com/questions/105912/can-you-change-code-distributed-under-the-mit-license-and-re-distribute-it-unde
 - https://stackoverflow.com/questions/25173462/what-is-the-sizeof-stdarraychar-n
 - https://stackoverflow.com/questions/51316233/how-can-i-see-git-diff-on-the-visual-studio-code-side-by-side-file
+- https://savvyadmin.com/extract-audio-from-video-files-to-wav-using-ffmpeg/
 - For how to break video into frames with ffmpeg
 
 C-Turtle docs (which weren't really that helpful, thanks, and the website is down (?) so I had to download the repo and view locally)
