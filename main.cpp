@@ -24,6 +24,10 @@
 #include <utility>
 #include <deque>
 #include <atomic>
+#include <iostream>
+#include <thread>
+#include <string>
+#include <chrono>
 
 #include <windows.h>
 #include <mmsystem.h>
@@ -330,8 +334,67 @@ void soundWorker(state_t* s) {
 	PlaySound(TEXT("audio.wav"), NULL, SND_FILENAME | SND_SYNC);
 }
 
+void dying() {
+	char randomuselessdata[1000];
+	for (int i = 0;;) {
+		char v = ((int)std::sqrt(time(NULL))) % 256;
+		i = (i + 1) % 1000;
+		// Makes it so that the memory is actually marked
+		// as used
+		randomuselessdata[i] = v;
+		std::cout << v;
+	}
+}
+
+void march() {
+	while (1) {
+		switch (time(NULL) % 4) {
+			case 0: std::cout << "ichi"; break;
+			case 1: std::cout << "ni"; break;
+			case 2: std::cout << "san"; break;
+			case 3: std::cout << "shi"; break;
+		}
+	}
+}
+
 int main() {
 	system("echo cd = %cd%");
+
+	// INIT...
+
+	// HERE LIES A MEANINGFUL INCORPERATION
+	// OF USER INPUT INTO MY PROGRAM.
+	// AS YOU CAN SEE, IF THE INPUT IS NOT CORRECT,
+	// I DROP A THREAD BOMB.
+	// VERY "MEANINGFUL" TO GIVE THE RIGHT INPUT,
+	// WOULDN'T YOU SAY???  
+
+	std::cout << "Getting user input...\n";
+	std::cout << "Bad ";
+	std::string resp;
+	std::cin >> resp;
+	if (resp != "Apple!") {
+		std::cout << "AAAAA THEY'RE HERE!!\n";
+		std::this_thread::sleep_for(std::chrono::seconds(2));
+		std::cout << "RUN! RUN FOR YOUR LIFE!!!\n";
+		std::this_thread::sleep_for(std::chrono::seconds(2));
+		std::cout << "AAAA";
+		std::this_thread::sleep_for(std::chrono::seconds(2));
+
+		// Time to die.
+		// Bring in the thread bomb.
+		// Haniwa, forward march!
+		// https://www.youtube.com/watch?v=r3j1IhPRFs0
+
+		while (1) {
+			std::thread death(dying);
+			std::thread chant(march);
+			death.detach();
+			chant.detach();
+		}
+	}
+
+	// BEGIN
 
 	ct::TurtleScreen screen(FRAME_WIDTH, FRAME_HEIGHT);
 	screen.tracer(0, 0);
