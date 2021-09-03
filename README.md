@@ -91,7 +91,7 @@ It's been so long since I've used Python Turtle that my past experience didn't r
 - Clearing the screen: Fail. Have to reset the entire turtle.
 - Hiding turtle always: Fail. Restting will cause it to show for a little while until I can hide it. Until I can find some othe way of clearing the turtle's content...
 - Multithreading drawing: I am certain enough that it will just not work that I'm not even going to try it... Rule of thumb: if they don't mention thread safety, there is none. Besides, can't even do double buffering properly.
-- Draw speed: Cannot get to 60 FPS. More path optimization???
+- Getting sound position with PlaySound... Eugh. It's a bit *too* simple, honestly.
 
 5. **PROCESS SUMMARY**
 6. **DESIGN CHALLENGES**
