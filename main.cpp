@@ -33,7 +33,7 @@
 
 // How much quality we can afford to loose.
 // (higher values result in lower quality video)
-#define MAX_QUALITY_LOSS 10
+#define MAX_QUALITY_LOSS 5
 // Number of frames to load before starting.
 // Setting this too high might cause a significant
 // wait at startup before the video plays
@@ -368,6 +368,7 @@ int main() {
 
 	for (int f = 0; f < NUM_FRAMES; f++) {
 		// ANIMATION IS TOO SLOW!?!?
+		const double timeBuffer = nextFrameTime - millis();
 		while ((std::time_t)nextFrameTime >= millis());
 		std::time_t now = millis();
 		nextFrameTime = now + millisPerFrame;
@@ -380,7 +381,7 @@ int main() {
 			// For however many frames we are ahead/behind
 			double fps = FRAMES_PER_SEC + diff;
 			millisPerFrame = 1000.0 / fps;
-			std::cout << "millisPerFrame = " << millisPerFrame << ", seconds elapsed = " << seconds << ", lost frames = " << diff << '\n' << std::flush;
+			std::cout << "millisPerFrame = " << millisPerFrame << ", buffer = " << timeBuffer << ", seconds elapsed = " << seconds << ", lost frames = " << diff << '\n' << std::flush;
 		}
 		// Time waiting for load included in frame render time
 		// Better FPS & sound sync
