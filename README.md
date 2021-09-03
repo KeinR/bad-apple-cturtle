@@ -324,6 +324,7 @@ All library licences listed above are compatable with the GPL.
 - Bad Apple (indirectly) (original PV); originally from NicoNico, but also found on YouTube
 - youtube-dl for scraping the video from YouTube
 - ffmpeg for extraction of video frames
+- Windows for PlaySound function (even though it sucks!)
 - All those "Bad Apple on X" videos/projects
     - See this great playlist: https://www.youtube.com/playlist?list=PLajlU5EKJVdonUGTEc7B-0YqElDlz9Sf9
 
