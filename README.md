@@ -93,14 +93,13 @@ It's been so long since I've used Python Turtle that my past experience didn't r
 - Multithreading drawing: I am certain enough that it will just not work that I'm not even going to try it... Rule of thumb: if they don't mention thread safety, there is none. Besides, can't even do double buffering properly.
 - Getting sound position with PlaySound... Eugh. It's a bit *too* simple, honestly.
 
-5. **PROCESS SUMMARY**
+5. **PROCESS SUMMARY** # fallthrough
 6. **DESIGN CHALLENGES**
-(this answers both)
 *Briefly summarize your design and implementation process, 
 including how much your initial design plan evolved, 
 the final results you achieved, and the amount of time you spent 
 as a programmer or programmers in accomplishing these results. 
-This should be one or at most two paragraphs.*
+This should be one or at most two paragraphs.*\
 *Describe the primary conceptual challenges that you encountered 
 in trying to complete this lab and what might have made the 
 lab easier for you.*
@@ -310,6 +309,9 @@ Stack Exchange for many things. I don't have all the links, but the ones that I 
 - https://stackoverflow.com/questions/51316233/how-can-i-see-git-diff-on-the-visual-studio-code-side-by-side-file
 - https://savvyadmin.com/extract-audio-from-video-files-to-wav-using-ffmpeg/
 - For how to break video into frames with ffmpeg
+
+Other references are scattered throughout the sources
+next to the pertinent code.
 
 C-Turtle docs (which weren't really that helpful, thanks, and the website is down (?) so I had to download the repo and view locally)
 
