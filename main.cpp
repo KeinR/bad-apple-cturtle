@@ -1,4 +1,4 @@
- /* 
+﻿ /* 
  * License: GNU GPL 3.0 or any later version
  * Author: Orion Musselman (unless indicated otherwise)
  * Assignment name: "Loopy Graphics with C-Turtle"
@@ -53,6 +53,10 @@
 // If too low, FPS may drop below 30.
 // If too high, will use lots of memory.
 #define FRAME_BUFFER_SIZE 60
+// Show the watermark at the bottom (very ugly,
+// not recommended unless professor requires it
+// to show)
+// #define WATERMARK
 
 // --- END USER MODIFIABLE DEFS ---
 
@@ -396,13 +400,24 @@ int main() {
 
 	// BEGIN
 
-	ct::TurtleScreen screen(FRAME_WIDTH, FRAME_HEIGHT);
+	ct::TurtleScreen screen(FRAME_WIDTH, FRAME_HEIGHT, "Bad Apple!!");
 	screen.tracer(0, 0);
 	screen.bgcolor({ "white" });
 	ct::Turtle t1(screen);
 	ct::Turtle t2(screen);
 	std::array<ct::Turtle*, 2> tdbuf = {&t1, &t2};
 	int ti = 0;
+
+#ifdef WATERMARK
+	ct::Turtle scribe(screen);
+	scribe.hideturtle();
+	scribe.speed(ct::TS_FASTEST);
+	scribe.penup();
+	scribe.goTo(- FRAME_WIDTH / 2.0, - FRAME_HEIGHT / 2.0);
+	// NND = Nico Nico Douga
+	// https://www.nicovideo.jp/watch/sm8628149
+	scribe.write("Bad Apple!! (orig. Anira on NND, C-Turtle ver. Orion M)");
+#endif
 
 	state_t state;
 	state.currentFrame.store(0);
