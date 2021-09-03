@@ -15,13 +15,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CImg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CTurtle.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\stb_image.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\CImg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\CTurtle.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
