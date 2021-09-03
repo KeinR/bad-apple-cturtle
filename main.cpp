@@ -1,6 +1,13 @@
  /* 
  * License: GNU GPL 3.0 or any later version
- * Author: Orion Musselman 
+ * Author: Orion Musselman (unless indicated otherwise)
+ * Assignment name: "Loopy Graphics with C-Turtle"
+ * Assignment purpose: "Meaningfully use loops,
+ * conditionals, and C-Turtle to effectively incorporate
+ * user-provided information into a work of art that makes
+ * you happy. [sic]"
+ * Description: Plays raw image frames from the
+ * "Bad Apple!!" PV using C-Turtle, with sound.
  */
 
 #define STB_IMAGE_IMPLEMENTATION
