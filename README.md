@@ -324,6 +324,7 @@ C-Turtle docs (which weren't really that helpful, thanks, and the website is dow
 All library licences listed above are compatable with the GPL.
 
 - Bad Apple (indirectly) (original PV); originally from NicoNico, but also found on YouTube
+    - https://www.nicovideo.jp/watch/sm8628149
 - youtube-dl for scraping the video from YouTube
 - ffmpeg for extraction of video frames
 - Windows for PlaySound function (even though it sucks!)
