@@ -157,18 +157,18 @@ path. Something like this:
 0 = black
 1 = white
 
-1110000
-1100000
-1100000
-1100000
+1110000\
+1100000\
+1100000\
+1100000\
 1000000
 
 Now with the steps the path takes (0 = not touched by path):
 
-0001000
-0024000
-0030000
-0000000
+0001000\
+0024000\
+0030000\
+0000000\
 0000000
 
 Notice how the path is completely valid, and yet, it is stopped at 4?
@@ -237,6 +237,43 @@ That way, it will never hit another frame that is worked on by another thread,
 and there is no need to iterate, and the frames will be completed in a progressive
 manner. 
 
+It's pretty complete, if I do say so myself, but it's missing something
+important...
+SOUND!
+
+What good is a turtle adaptation of a music PV if it doesn't
+have any... Music?
+
+In Windex, this is simple enough; there is a PlaySound function.
+Under Linux, you might want to consider VLC or something of the nature.
+There was one major issue however....
+
+The sound and animation just didn't want to sync.
+I tried many things, to no avail. I thought I could get the
+play status from PlaySound, but that does not seem possible.
+
+I resolved to put the PlaySound on SYNC and on a thread that
+I control to reduce impact from thread startup. Then,
+as the animation is playing, I correct the FPS to make sure that
+it doesn't get too far/behind. I don't really know why
+it's out of sync to begin with, but I can theorize that
+it's due to the call to time() and whatnot that throw it off
+ever so slightly, or floating point errors (more likely)
+since the frame duration is 33.3333 ms... something for 30 FPS.
+
+It will sometimes not sync very well however - the sound will
+be behind the animation.
+THe only reason I have for this right now is memory cache - 
+and I've tested it to some extent.
+The audio file is in read from disk the first time it's played,
+but after that it gets shunted off to a memory cache by the OS that
+makes reads way, way faster.
+In any case, after a few attempts, it is synched pretty well.
+
+And uh, yah, there you go. I wanted to get filling done, but oh well.
+Also Linux portability - I feel slightly dirty licensing a Windows
+only application under the GPL.
+
 7. **ERRORS**
 *List in bulleted form of all known errors 
 and deficiencies with a very brief explanation.*
@@ -244,13 +281,22 @@ and deficiencies with a very brief explanation.*
 This would be a very different question if you were asking for ALL errors
 that I experienced. But for now...
 - Drawing is too slow (but there's not much I can do about that short of editing C-Turtle directly)
-- Lines break off at a certain point for whatever reason, reuslting in a jagged image on low resolutions
+- No filling for the silloets (like in PV)
+- Not portable to Linux in its current state, as it uses Windex libs
+- Audio sync would be improved dramatically if VLC was used, as there is more control over streaming
 
 8. **LEARNING AND REACTION**
 *A paragraph or so of your own comments 
 on what you learned and your reactions to this lab.*
 
-*TODO* 
+I learned a lot, I think. My understanding of "graph" algorithm design
+was improved, as I built the turtle paths. I learned more than I
+felt I should about Windex APIs. This is one of the few times I've used
+multithreading, and especially for something so practical like speeding
+up a computation (usually, I reconsider using more processing power).
+I gained a greater understanding of syncronizing frames, as I've learned that
+frames will have some ammount of error that has to be corrected.
+To be completely honest, I haven't had this much fun in a while.
 
 9. **INTEGRITY STATEMENT**
 *Please briefly describe ALL help you received and 
@@ -279,4 +325,5 @@ All library licences listed above are compatable with the GPL.
 - youtube-dl for scraping the video from YouTube
 - ffmpeg for extraction of video frames
 - All those "Bad Apple on X" videos/projects
+    - See this great playlist: https://www.youtube.com/playlist?list=PLajlU5EKJVdonUGTEc7B-0YqElDlz9Sf9
 
