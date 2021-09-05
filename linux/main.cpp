@@ -13,7 +13,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 
 #include "include/stb_image.h"
-#include "include/CTurtle.hpp";
+#include "include/CTurtle.hpp"
+
+#include <vlc/vlc.h>
 
 #include <cstdio>
 #include <cmath>
@@ -76,7 +78,6 @@ struct frame_t {
 struct state_t {
 	std::atomic_int currentFrame;
 	std::atomic_bool alive;
-	std::atomic_bool soundReady;
 	std::atomic_bool videoReady;
 	std::array<frame_t, NUM_FRAMES> frames;
 };
@@ -327,11 +328,6 @@ void worker(state_t *s) {
 	}
 }
 
-void soundWorker(state_t* s) {
-	s->soundReady.store(true);
-	while (!s->videoReady.load());
-}
-
 void dying() {
 	char randomuselessdata[1000];
 	for (int i = 0;;) {
@@ -416,7 +412,6 @@ int main() {
 	state_t state;
 	state.currentFrame.store(0);
 	state.alive.store(true);
-	state.soundReady.store(true);
 	state.videoReady.store(true);
 	for (frame_t& f : state.frames) {
 		f.taken.store(false);
@@ -426,8 +421,7 @@ int main() {
 	std::thread a(worker, &state);
 	std::thread b(worker, &state);
 	std::thread c(worker, &state);
-	std::thread d(worker, &state);
-	std::thread e(soundWorker, &state);
+        std::thread d(worker, &state);
 
 	// 30 frames per second from original video
 	double millisPerFrame = 1000.0 / FRAMES_PER_SEC;
@@ -437,11 +431,16 @@ int main() {
 	// Sound synchs better
 	while (!state.frames[FRAMES_PRELOAD].done.load());
 
-	// Sync with the sound worker
-	// (threads take a moment to init)
-	while (!state.soundReady.load());
-	state.videoReady.store(true);
+        libvlc_instance_t *inst;
+        libvlc_media_player_t *mp;
+        libvlc_media_t *m;
 
+        inst = libvlc_new(0, NULL);
+        m = libvlc_media_new_path(inst, "audio.wav");
+        mp = libvlc_media_player_new_from_media (m);
+        libvlc_media_release(m);
+        libvlc_media_player_play(mp);
+        
 	std::time_t lastTime = millis();
 	const std::time_t timeStarted = lastTime;
 
@@ -504,11 +503,14 @@ int main() {
 
 	state.alive.store(false);
 
+        libvlc_media_player_stop(mp);
+        libvlc_media_player_release(mp);
+        libvlc_release(inst);
+
 	a.join();
 	b.join();
 	c.join();
 	d.join();
-	e.join();
 
 	return 0;
 }

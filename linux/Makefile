@@ -20,7 +20,7 @@ res: $(RESOURCES)
 # I'll just rely on the linting for now...
 $(OUTPUT): $(SOURCES)
 	@echo "--------- compiling source ---------"
-	g++ -O2 -Iinclude $(SOURCES) -o $(OUTPUT) $(shell pkg-config x11 --libs) -pthread
+	g++ -O2 -Iinclude $(SOURCES) -o $(OUTPUT) $(shell pkg-config x11 --libs) -lvlc -pthread
 
 $(AUDIO): $(VIDEO)
 	@echo "--------- extracting audio ---------"
